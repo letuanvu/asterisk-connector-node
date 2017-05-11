@@ -7,7 +7,7 @@ const createWebSocket = require('./webSocket/index.js');
 var app = express();
 var server = http.createServer(app);
 createWebSocket(server);
-
+global.filter = 'all';
 
 app.use(express.static(publicPath));
 

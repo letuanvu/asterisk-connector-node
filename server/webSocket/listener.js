@@ -1,3 +1,4 @@
+
 function listener(ami, socket) {
     socket.on('disconnect', () => {
         console.log('User was disconnected');
@@ -37,6 +38,14 @@ function executeCommand(command, socket, ami) {
                         socket.emit('info', 'Originating call!');
                     }
                 );
+            }
+            break;
+        case 'filter':
+            if (arrayCommand.length < 2) {
+                socket.emit('errorAMI', 'Missing parameters!');
+            } else {
+                filter = arrayCommand[1];
+                socket.emit('info', 'Event filter is set to ' + filter + '. To reset type "filter all"');
             }
             break;
         default:

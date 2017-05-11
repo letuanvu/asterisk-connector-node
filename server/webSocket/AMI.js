@@ -4,7 +4,7 @@ const emitter = require('./emitter.js');
 const { ASTERISK_SERVER_IP,
     ASTERISK_SERVER_PORT,
     ASTERISK_USERNAME,
-    ASTERISK_PASSWORD } = require('../../config.js');
+    ASTERISK_PASSWORD } = require('../../config.js').generalConfig;
 
 function createAMIstream(socket) {
     const ami = aio.ami(

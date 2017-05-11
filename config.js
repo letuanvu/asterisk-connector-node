@@ -4,4 +4,6 @@ const config = {
     ASTERISK_USERNAME: 'admin',
     ASTERISK_PASSWORD: 'password',
 }
-module.exports = config;
+
+
+module.exports.generalConfig = config;

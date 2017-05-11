@@ -36,12 +36,19 @@ function scrollToBot() {
     objDiv.scrollTop = objDiv.scrollHeight;
 }
 
-document.getElementById('command').onkeypress = function(e){
+document.getElementById('command').onkeypress = function (e) {
     if (!e) e = window.event;
     var keyCode = e.keyCode || e.which;
-    if (keyCode == '13'){
-      socket.emit('command', document.getElementById('command').value, function() {
-          document.getElementById('command').value = "";
-      });
+    if (keyCode == '13') {
+        if (document.getElementById('command').value == 'clear') {
+            result = 'Web command line interface Asterisk ver 1.0';
+            document.getElementById('result').innerHTML = result;
+            document.getElementById('command').value = "";
+        } else {
+            socket.emit('command', document.getElementById('command').value, function () {
+                document.getElementById('command').value = "";
+            });
+        }
+
     }
-  }
+}
