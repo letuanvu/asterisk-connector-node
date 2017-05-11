@@ -1,5 +1,5 @@
 var socket = io();
-var result = '';
+var result = 'Web command line interface Asterisk ver 1.0';
 socket.on('connect', () => {
     console.log('Connected to server');
 });
@@ -13,7 +13,7 @@ socket.on('greeting', (data) => {
     scrollToBot();
 });
 
-socket.on('error', (data) => {
+socket.on('errorAMI', (data) => {
     result += "<br>" + '<span style="color: red"><b>Error: </b></span> ' + JSON.stringify(data);
     document.getElementById('result').innerHTML = result;
     scrollToBot();

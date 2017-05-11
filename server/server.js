@@ -11,6 +11,6 @@ createWebSocket(server);
 
 app.use(express.static(publicPath));
 
-server.listen(4000, () => {
+server.listen(3000, () => {
     console.log('app is running');
 })
