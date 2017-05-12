@@ -1,4 +1,4 @@
-const util = require('../utilities/util.js');
+const _ = require('lodash');
 
 function emitter(ami, socket) {
     ami.on('error', function (err) {
@@ -16,7 +16,7 @@ function emitter(ami, socket) {
                 }
                 socket.emit('info', emitData);
             } else if (eventFilter == 'all' && contentFilter != 'all') {
-                if (util.isValueExist(data, contentFilter)) {
+                if (_.includes(JSON.stringify(data),contentFilter)) {
                     var emitData = {
                         eventFilter,
                         contentFilter,
@@ -34,7 +34,7 @@ function emitter(ami, socket) {
                     socket.emit('info', emitData);
                 }
             } else {
-                if (data.Event == eventFilter && util.isValueExist(data, contentFilter)) {
+                if (data.Event == eventFilter && _.includes(JSON.stringify(data),contentFilter)) {
                     var emitData = {
                         eventFilter,
                         contentFilter,
