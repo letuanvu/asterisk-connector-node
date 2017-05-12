@@ -20,7 +20,7 @@ socket.on('errorAMI', (data) => {
 })
 
 socket.on('info', (data) => {
-    result += "<br>" + '<span style="color: blue"><b>Event: </b></span> ' + JSON.stringify(data);
+    result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + data.eventFilter + ', content filter: ' + data.contentFilter + ') </span> ' + JSON.stringify(data.info);
     document.getElementById('result').innerHTML = result;
     scrollToBot();
 })

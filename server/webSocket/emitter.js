@@ -1,3 +1,4 @@
+const util = require('../utilities/util.js');
 
 function emitter(ami, socket) {
     ami.on('error', function (err) {
@@ -7,11 +8,39 @@ function emitter(ami, socket) {
     ami.on('ready', function () {
         console.log('ready');
         ami.on('eventAny', function (data) {
-            if (filter == 'all') {
-                socket.emit('info', data);
+            if (eventFilter == 'all' && contentFilter == 'all') {
+                var emitData = {
+                    eventFilter,
+                    contentFilter,
+                    info: data
+                }
+                socket.emit('info', emitData);
+            } else if (eventFilter == 'all' && contentFilter != 'all') {
+                if (util.isValueExist(data, contentFilter)) {
+                    var emitData = {
+                        eventFilter,
+                        contentFilter,
+                        info: data
+                    }
+                    socket.emit('info', emitData);
+                }
+            } else if (eventFilter != 'all' && contentFilter == 'all') {
+                if (data.Event == eventFilter) {
+                    var emitData = {
+                        eventFilter,
+                        contentFilter,
+                        info: data
+                    }
+                    socket.emit('info', emitData);
+                }
             } else {
-                if (data.Event == filter) {
-                    socket.emit('info', data);
+                if (data.Event == eventFilter && util.isValueExist(data, contentFilter)) {
+                    var emitData = {
+                        eventFilter,
+                        contentFilter,
+                        info: data
+                    }
+                    socket.emit('info', emitData);
                 }
             }
         });
