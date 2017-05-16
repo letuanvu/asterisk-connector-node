@@ -23,6 +23,16 @@ socket.on('info', (data) => {
     result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + data.eventFilter + ', content filter: ' + data.contentFilter + ') </span> ' + JSON.stringify(data.info);
     document.getElementById('result').innerHTML = result;
     scrollToBot();
+    if (data.info.Event == 'End MixMonitorCall') {
+        var player = document.getElementById('player');
+        var playerSource = document.getElementById('playersource');
+        var urlArray = data.info.File.split("/");
+        if (urlArray.length > 5 && urlArray.length < 7) {
+            playerSource.src = '/download/'+urlArray[4]+'/'+urlArray[5];
+            player.load();
+            player.play();
+        }
+    }
 })
 
 socket.on('command', (data) => {
