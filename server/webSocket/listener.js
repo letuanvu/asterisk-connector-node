@@ -50,52 +50,6 @@ function executeCommand(command, socket, ami) {
                 );
             }
             break;
-        case 'filter':
-            if (arrayCommand.length < 2) {
-                socket.emit('errorAMI', 'Missing parameters!');
-            } else {
-                switch (arrayCommand[1]) {
-                    case "event":
-                        if (arrayCommand[2]) {
-                            eventFilter = arrayCommand[2];
-                            var emitData = {
-                                eventFilter,
-                                contentFilter,
-                                info: 'Event filter is set to ' + eventFilter + '. To reset event filter type "filter event all". To reset whole filter, type "filter reset"'
-                            }
-                            socket.emit('info', emitData);
-                        } else {
-                            socket.emit('errorAMI', 'Missing parameters!');
-                        }
-                        break;
-                    case "content":
-                        if (arrayCommand[2]) {
-                            contentFilter = arrayCommand[2];
-                            var emitData = {
-                                eventFilter,
-                                contentFilter,
-                                info: 'Content filter is set to ' + contentFilter + '. To reset content filter, type "filter content all". To reset whole filter, type "filter reset"'
-                            }
-                            socket.emit('info', emitData);
-                        } else {
-                            socket.emit('errorAMI', 'Missing parameters!');
-                        }
-                        break;
-                    case "reset":
-                        eventFilter = "all";
-                        contentFilter = "all";
-                        var emitData = {
-                            eventFilter,
-                            contentFilter,
-                            info: 'Reset filter! event filter is set to ' + eventFilter + ', content filter is set to ' + contentFilter + '.'
-                        }
-                        socket.emit('info', emitData);
-                        break;
-                    default:
-                        socket.emit('errorAMI', arrayCommand[1] + ' not found');
-                }
-            }
-            break;
         default:
             socket.emit('errorAMI', arrayCommand[0] + ' not found');
     }

@@ -1,5 +1,8 @@
 var socket = io();
 var result = 'Web command line interface Asterisk ver 1.0';
+var eventFilter = "all";
+var contentFilter = "all";
+
 socket.on('connect', () => {
     console.log('Connected to server');
 });
@@ -20,15 +23,29 @@ socket.on('errorAMI', (data) => {
 })
 
 socket.on('info', (data) => {
-    result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + data.eventFilter + ', content filter: ' + data.contentFilter + ') </span> ' + JSON.stringify(data.info);
+    if (eventFilter == 'all' && contentFilter == 'all') {
+        result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + eventFilter + ', content filter: ' + contentFilter + ') </span> ' + JSON.stringify(data);
+    } else if (eventFilter != 'all' && contentFilter == 'all') {
+        if (data.Event == eventFilter) {
+            result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + eventFilter + ', content filter: ' + contentFilter + ') </span> ' + JSON.stringify(data);
+        }
+    } else if (eventFilter == 'all' && contentFilter != 'all') {
+        if (JSON.stringify(data).indexOf(contentFilter) !== -1) {
+            result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + eventFilter + ', content filter: ' + contentFilter + ') </span> ' + JSON.stringify(data);
+        }
+    } else if (eventFilter != 'all' && contentFilter != 'all') {
+        if (data.Event == eventFilter && JSON.stringify(data).indexOf(contentFilter) !== 1) {
+            result += "<br>" + '<span style="color: blue"><b>Event:</b> (event filter: ' + eventFilter + ', content filter: ' + contentFilter + ') </span> ' + JSON.stringify(data);
+        }
+    }
     document.getElementById('result').innerHTML = result;
     scrollToBot();
-    if (data.info.Event == 'End MixMonitorCall') {
+    if (data.Event == 'End MixMonitorCall') {
         var player = document.getElementById('player');
         var playerSource = document.getElementById('playersource');
-        var urlArray = data.info.File.split("/");
+        var urlArray = data.File.split("/");
         if (urlArray.length > 5 && urlArray.length < 7) {
-            playerSource.src = '/download/'+urlArray[4]+'/'+urlArray[5];
+            playerSource.src = '/download/' + urlArray[4] + '/' + urlArray[5];
             player.load();
             player.play();
         }
@@ -50,12 +67,31 @@ document.getElementById('command').onkeypress = function (e) {
     if (!e) e = window.event;
     var keyCode = e.keyCode || e.which;
     if (keyCode == '13') {
-        if (document.getElementById('command').value == 'clear') {
+        var command = document.getElementById('command').value;
+        if (command == 'clear') {
             result = 'Web command line interface Asterisk ver 1.0';
             document.getElementById('result').innerHTML = result;
             document.getElementById('command').value = "";
+        } else if ((command.split(" ")[0] == 'filter')) {
+            if (command.split(" ").length > 2) {
+                if (command.split(" ")[1] == 'event') {
+                    eventFilter = command.split(" ")[2];
+                } else if (command.split(" ")[1] == 'content') {
+                    contentFilter = command.split(" ")[2];
+                } else {
+                    result += "<br>" + '<span style="color: red"><b>Error: </b></span> Not found ' + command;
+                    document.getElementById('result').innerHTML = result;
+                    scrollToBot();
+                }
+            } else {
+                result += "<br>" + '<span style="color: red"><b>Error: </b></span> Missing parameters ' + command;
+                document.getElementById('result').innerHTML = result;
+                scrollToBot();
+            }
+
+            document.getElementById('command').value = "";
         } else {
-            socket.emit('command', document.getElementById('command').value, function () {
+            socket.emit('command', command, function () {
                 document.getElementById('command').value = "";
             });
         }

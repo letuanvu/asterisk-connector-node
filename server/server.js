@@ -11,8 +11,6 @@ const confFTP = require('../config.js').configFTP;
 var app = express();
 var server = http.createServer(app);
 createWebSocket(server);
-global.eventFilter = 'all';
-global.contentFilter = 'all';
 app.use(express.static(publicPath));
 
 
