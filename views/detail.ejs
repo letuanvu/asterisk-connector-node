@@ -2,15 +2,16 @@
 <html>
 
 <head>
-    <title>Trang test connector</title>
+    <title>Trang quản lý Call Center của <%= namespace %></title>
 </head>
 
 <body>
     <h3>Ghi âm cuộc gọi mới nhất</h3>
     <audio id='player' controls>
-        <source id='playersource' src="/download/20170516/20170516155637-Outbound-pstn2-128-0947229824" type="audio/wav">
+        <source id='playersource' src="" type="audio/wav">
     </audio>
-    <h1>Trang test connector</h1>
+    <h1>Trang quản lý Call Center của <%= namespace %></h1>
+    <input id="namespace" type="hidden" value="<%= namespace %>"/>
     <p>Câu lệnh: <br/>
         call [from] [to]: Tạo cuộc gọi từ số [from] đến số [to].<br/>
         filter content [content]: Chỉ hiện những log có chứa nội dung [content]. (Nếu filter event tồn tại thì thêm điều kiện event = [event])<br/>

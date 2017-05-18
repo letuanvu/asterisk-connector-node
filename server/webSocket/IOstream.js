@@ -2,9 +2,9 @@ const createAMIstream = require('./AMI.js').emitter;
 // var aio = require('asterisk.io');
 
 
-function createStream(socket) {
+function createStream(socket, ami) {
     socket.emit('greeting', 'Xin Chào!');
-    createAMIstream(socket);
+    createAMIstream(socket, ami);
 }
 
 module.exports = createStream;

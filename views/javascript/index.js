@@ -1,4 +1,5 @@
-var socket = io();
+var namespace = document.getElementById('namespace').value;
+var socket = io('http://localhost:3000/'+namespace);
 var result = 'Web command line interface Asterisk ver 1.0';
 var eventFilter = "all";
 var contentFilter = "all";
@@ -45,7 +46,7 @@ socket.on('info', (data) => {
         var playerSource = document.getElementById('playersource');
         var urlArray = data.File.split("/");
         if (urlArray.length > 5 && urlArray.length < 7) {
-            playerSource.src = '/download/' + urlArray[4] + '/' + urlArray[5];
+            playerSource.src = '/'+namespace+'/' + urlArray[4] + '/' + urlArray[5];
             player.load();
             player.play();
         }

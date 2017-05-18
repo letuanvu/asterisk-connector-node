@@ -20,12 +20,7 @@ function executeCommand(command, socket, ami) {
             if (arrayCommand.length < 3) {
                 socket.emit('errorAMI', 'Missing parameters!');
             } else {
-                var emitData = {
-                    eventFilter,
-                    contentFilter,
-                    info: 'Excuting command ' + command
-                }
-                socket.emit('info', emitData);
+                socket.emit('info', 'Excuting command ' + command);
                 ami.action(
                     'Originate',
                     {
@@ -40,12 +35,7 @@ function executeCommand(command, socket, ami) {
                             socket.emit('errorAMI', 'Cannot originate call!');
                             return;
                         }
-                        var emitData = {
-                            eventFilter,
-                            contentFilter,
-                            info: 'Originating call!'
-                        }
-                        socket.emit('info', emitData);
+                        socket.emit('info', 'Originating call!');
                     }
                 );
             }
