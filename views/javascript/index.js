@@ -1,5 +1,5 @@
 var namespace = document.getElementById('namespace').value;
-var socket = io('http://localhost:3000/'+namespace);
+var socket = io('/'+namespace);
 var result = 'Web command line interface Asterisk ver 1.0';
 var eventFilter = "all";
 var contentFilter = "all";
