@@ -1,9 +1,10 @@
 var namespace = document.getElementById('namespace').value;
-var socket = io('/'+namespace);
+var cookie = escape(document.cookie);
+var token = escape("sid:aac6b45feb1260235c67eca47bea1a9f28519e50,1495160097"); //example token
+var socket = io('/'+namespace,{ 'query': "token="+token+"&cookie="+escape("PHPSESSID=ael69p5vvpi3ovlp7mmthgsjn1")});
 var result = 'Web command line interface Asterisk ver 1.0';
 var eventFilter = "all";
 var contentFilter = "all";
-
 socket.on('connect', () => {
     console.log('Connected to server');
 });
