@@ -1,5 +1,13 @@
 const configPBXservers = [{
     company: 'ASK',
+    crmurl: 'http://192.168.100.136/vtigercrm7',
+    db: {
+        host: '192.168.100.136',
+        port: '3306',
+        user: 'root',
+        password: '',
+        database: 'vtiger7',
+    },
     asterisk: {
         ASTERISK_SERVER_IP: '192.168.100.3',
         ASTERISK_SERVER_PORT: 5038,
@@ -14,5 +22,6 @@ const configPBXservers = [{
     }
 
 }]
+
 
 module.exports.configPBXservers = configPBXservers;
