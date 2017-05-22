@@ -73,47 +73,49 @@ function createWebSocket(server) {
                 if (data.Event == 'Cdr') {
                     dbconnection.execute('SELECT id, phone_crm_extension FROM vtiger_users WHERE phone_crm_extension=? OR phone_crm_extension=?', [data.Source, data.Destination], function (err, results, fields) {
                         if (results.length > 0) {
-                            console.log('crm user got call:', data.Source, data.Destination)
                             var userId = results[0].id;
-                            var startTime = '';
-                            if (data.AnswerTime) {
-                                startTime = data.AnswerTime;
-                            } else {
-                                startTime = data.StartTime;
-                            }
-                            var customernumber = '';
-                            if (results[0].phone_crm_extension == data.Source) {
-                                customernumber = data.Destination;
-                            } else {
-                                customernumber = data.Source;
-                            }
-                            dbconnection.execute('SELECT MAX(crmid) AS latestId FROM `vtiger_crmentity`', function (errS1, resultsS1, fieldsS1) {
-                                var nextId = resultsS1[0].latestId + 1;
-                                console.log('next entity id:', nextId);
-                                dbconnection.execute('INSERT INTO vtiger_crmentity (crmid,smcreatorid,smownerid,modifiedby,setype,description,createdtime,modifiedtime,viewedtime,status,version,presence,deleted,label,source,smgroupid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                                    [nextId, 1, 1, 0, "PBXManager", "", data.StartTime, data.StartTime, null, null, 0, 1, 0, customernumber, "CRM", 0], function (errI1, resultsI1, fieldsI1) {
-                                        if (!errI1) {
-                                            console.log('inserted entity id:', nextId);
-                                            dbconnection.execute('UPDATE vtiger_crmentity_seq SET id=?', [nextId], function (errU1, resultsU1, fieldsU1) {
-                                                if (!errU1) {
-                                                    console.log('updated sequence entity');
-                                                } else {
-                                                    console.log('ERROR when updated sequence entity');
-                                                }
-                                            });
-                                            dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                                                [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber], function (errI2, resultsI2, fieldsI2) {
-                                                    if (!errI2) {
-                                                        console.log('inserted into vtiger_pbxmanage', nextId);
+                            if (userId) {
+                                console.log('crm user got call:', data.Source, data.Destination)
+                                var startTime = '';
+                                if (data.AnswerTime) {
+                                    startTime = data.AnswerTime;
+                                } else {
+                                    startTime = data.StartTime;
+                                }
+                                var customernumber = '';
+                                if (results[0].phone_crm_extension == data.Source) {
+                                    customernumber = data.Destination;
+                                } else {
+                                    customernumber = data.Source;
+                                }
+                                dbconnection.execute('SELECT MAX(crmid) AS latestId FROM `vtiger_crmentity`', function (errS1, resultsS1, fieldsS1) {
+                                    var nextId = resultsS1[0].latestId + 1;
+                                    console.log('next entity id:', nextId);
+                                    dbconnection.execute('INSERT INTO vtiger_crmentity (crmid,smcreatorid,smownerid,modifiedby,setype,description,createdtime,modifiedtime,viewedtime,status,version,presence,deleted,label,source,smgroupid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                                        [nextId, 1, 1, 0, "PBXManager", "", data.StartTime, data.StartTime, null, null, 0, 1, 0, customernumber, "CRM", 0], function (errI1, resultsI1, fieldsI1) {
+                                            if (!errI1) {
+                                                console.log('inserted entity id:', nextId);
+                                                dbconnection.execute('UPDATE vtiger_crmentity_seq SET id=?', [nextId], function (errU1, resultsU1, fieldsU1) {
+                                                    if (!errU1) {
+                                                        console.log('updated sequence entity');
                                                     } else {
-                                                        console.log('ERROR when inserted into vtiger_pbxmanage', nextId);
+                                                        console.log('ERROR when updated sequence entity');
                                                     }
                                                 });
-                                        } else {
-                                            console.log('ERROR when inserted entity id:', nextId);
-                                        }
-                                    });
-                            });
+                                                dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                                                    [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber], function (errI2, resultsI2, fieldsI2) {
+                                                        if (!errI2) {
+                                                            console.log('inserted into vtiger_pbxmanage', nextId);
+                                                        } else {
+                                                            console.log('ERROR when inserted into vtiger_pbxmanage', nextId);
+                                                        }
+                                                    });
+                                            } else {
+                                                console.log('ERROR when inserted entity id:', nextId);
+                                            }
+                                        });
+                                });
+                            }
                         }
                     });
 
@@ -130,7 +132,7 @@ function createWebSocket(server) {
                                 if (results.length > 0)
                                     dbconnection.execute('UPDATE vtiger_pbxmanager SET recordingurl=?, callstatus=? WHERE pbxmanagerid=?',
                                         [dirArr[4] + '/' + dirArr[5], 'completed', results[0].pbxmanagerid], function (errU, resultsU, fieldsU) {
-                                            if(!errU) {
+                                            if (!errU) {
                                                 console.log('added call record URL successfully');
                                             } else {
                                                 console.log('ERROR when added call record URL');
