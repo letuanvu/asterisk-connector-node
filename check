@@ -1,45 +1,26 @@
-Ghi âm cuộc gọi mới nhất
-
-
-0:11
-/ 0:11
-
-
-
-Trang test connector
-
-Câu lệnh: 
-call [from] [to]: Tạo cuộc gọi từ số [from] đến số [to].
-filter content [content]: Chỉ hiện những log có chứa nội dung [content]. (Nếu filter event tồn tại thì thêm điều kiện event = [event])
-filter event [event]: Chỉ hiện những log có event là [event]. (Nếu filter content tồn tại thì thêm điều kiện content = [content])
-filter reset: Cài đặt lại tất cả filters. 
-clear: Dọn dẹp nội dung trên terminal
-
-Kết quả từ terminal
-
-Web command line interface Asterisk ver 1.0
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"128","Context":"default","Hint":"SIP/128","Status":"1"}
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"128","Context":"extensions-hintcontext","Hint":"SIP/128","Status":"1"}
-Event: (event filter: all, content filter: all) {"Event":"Newchannel","Privilege":"call,all","Channel":"SIP/128-0000058e","ChannelState":"0","ChannelStateDesc":"Down","CallerIDNum":"128","CallerIDName":"128","AccountCode":"","Exten":"0947229824","Context":"DLPN_DialPlan128","Uniqueid":"1495017621.2566"}
-Event: (event filter: all, content filter: all) {"Event":"Newstate","Privilege":"call,all","Channel":"SIP/128-0000058e","ChannelState":"4","ChannelStateDesc":"Ring","CallerIDNum":"128","CallerIDName":"128","Uniqueid":"1495017621.2566"}
-Event: (event filter: all, content filter: all) {"Event":"NewCallerid","Privilege":"call,all","Channel":"SIP/128-0000058e","CallerIDNum":"128","CallerIDName":"128","Uniqueid":"1495017621.2566","CID-CallingPres":"0 (Presentation Allowed, Not Screened)"}
-Event: (event filter: all, content filter: all) {"Event":"NewCallerid","Privilege":"call,all","Channel":"SIP/128-0000058e","CallerIDNum":"128","CallerIDName":"128","Uniqueid":"1495017621.2566","CID-CallingPres":"0 (Presentation Allowed, Not Screened)"}
-Event: (event filter: all, content filter: all) {"Event":"Newchannel","Privilege":"call,all","Channel":"DAHDI/1-1","ChannelState":"1","ChannelStateDesc":"Rsrvd","CallerIDNum":"","CallerIDName":"","AccountCode":"","Exten":"","Context":"DID_trunk_1","Uniqueid":"1495017622.2567"}
-Event: (event filter: all, content filter: all) {"Event":"Newstate","Privilege":"call,all","Channel":"DAHDI/1-1","ChannelState":"3","ChannelStateDesc":"Dialing","CallerIDNum":"128","CallerIDName":"128","Uniqueid":"1495017622.2567"}
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"pstn1","Context":"trunks-hintcontext","Hint":"DAHDI/1","Status":"1"}
-Event: (event filter: all, content filter: all) {"Event":"Dial","Privilege":"call,all","SubEvent":"Begin","Channel":"SIP/128-0000058e","Destination":"DAHDI/1-1","CallerIDNum":"128","CallerIDName":"128","UniqueID":"1495017621.2566","DestUniqueID":"1495017622.2567","Dialstring":"g21/0947229824"}
-Event: (event filter: all, content filter: all) {"Event":"NewCallerid","Privilege":"call,all","Channel":"DAHDI/1-1","CallerIDNum":"0947229824","CallerIDName":"","Uniqueid":"1495017622.2567","CID-CallingPres":"0 (Presentation Allowed, Not Screened)"}
-Event: (event filter: all, content filter: all) {"Event":"Newstate","Privilege":"call,all","Channel":"DAHDI/1-1","ChannelState":"6","ChannelStateDesc":"Up","CallerIDNum":"0947229824","CallerIDName":"","Uniqueid":"1495017622.2567"}
-Event: (event filter: all, content filter: all) {"Event":"Newstate","Privilege":"call,all","Channel":"SIP/128-0000058e","ChannelState":"6","ChannelStateDesc":"Up","CallerIDNum":"128","CallerIDName":"128","Uniqueid":"1495017621.2566"}
-Event: (event filter: all, content filter: all) {"Event":"NewAccountCode","Privilege":"call,all","Channel":"DAHDI/1-1","Uniqueid":"1495017622.2567","AccountCode":"","OldAccountCode":""}
-Event: (event filter: all, content filter: all) {"Event":"Bridge","Privilege":"call,all","Bridgestate":"Link","Bridgetype":"core","Channel1":"SIP/128-0000058e","Channel2":"DAHDI/1-1","Uniqueid1":"1495017621.2566","Uniqueid2":"1495017622.2567","CallerID1":"128","CallerID2":"0947229824"}
-Event: (event filter: all, content filter: all) {"Event":"Unlink","Privilege":"call,all","Channel1":"SIP/128-0000058e","Channel2":"DAHDI/1-1","Uniqueid1":"1495017621.2566","Uniqueid2":"1495017622.2567","CallerID1":"128","CallerID2":"0947229824"}
-Event: (event filter: all, content filter: all) {"Event":"Cdr","Privilege":"cdr,all","AccountCode":"","Source":"128","Destination":"0947229824","DestinationContext":"DLPN_DialPlan128","CallerID":"\"128\" <128>","Channel":"SIP/128-0000058e","DestinationChannel":"DAHDI/1-1","LastApplication":"Dial","LastData":"DAHDI/g21/0947229824,,tTkKWwXx","StartTime":"2017-05-17 17:40:21","AnswerTime":"2017-05-17 17:40:25","EndTime":"2017-05-17 17:40:40","Duration":"19","BillableSeconds":"15","Disposition":"ANSWERED","AMAFlags":"DOCUMENTATION","UniqueID":"1495017621.2566","UserField":"Outbound"}
-Event: (event filter: all, content filter: all) {"Event":"Hangup","Privilege":"call,all","Channel":"DAHDI/1-1","Uniqueid":"1495017622.2567","CallerIDNum":"0947229824","CallerIDName":"","Cause":"16","Cause-txt":"Normal Clearing"}
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"pstn1","Context":"trunks-hintcontext","Hint":"DAHDI/1","Status":"4"}
-Event: (event filter: all, content filter: all) {"Event":"Dial","Privilege":"call,all","SubEvent":"End","Channel":"SIP/128-0000058e","UniqueID":"1495017621.2566","DialStatus":"ANSWER"}
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"128","Context":"default","Hint":"SIP/128","Status":"0"}
-Event: (event filter: all, content filter: all) {"Event":"ExtensionStatus","Privilege":"call,all","Exten":"128","Context":"extensions-hintcontext","Hint":"SIP/128","Status":"0"}
-Event: (event filter: all, content filter: all) {"Event":"Hangup","Privilege":"call,all","Channel":"SIP/128-0000058e","Uniqueid":"1495017621.2566","CallerIDNum":"128","CallerIDName":"128","Cause":"16","Cause-txt":"Normal Clearing"}
-Event: (event filter: all, content filter: all) {"Event":"End MixMonitorCall","Privilege":"agent,all","File":"/media/ysDisk_1/autorecords/20170517/20170517174025-Outbound-pstn1-128-0947229824","Source Number":"128","Destination Number":"0947229824"}
-
+{ Event: 'Cdr',
+  Privilege: 'cdr,all',
+  AccountCode: '',
+  Source: '128',
+  Destination: '0947229824',
+  DestinationContext: 'DLPN_DialPlan128',
+  CallerID: '"128" <128>',
+  Channel: 'SIP/128-00000aa2',
+  DestinationChannel: 'DAHDI/6-1',
+  LastApplication: 'Dial',
+  LastData: 'DAHDI/g26/0947229824,,tTkKWwXx',
+  StartTime: '2017-05-19 14:53:57',
+  AnswerTime: '2017-05-19 14:54:00',
+  EndTime: '2017-05-19 14:54:12',
+  Duration: '15',
+  BillableSeconds: '12',
+  Disposition: 'ANSWERED',
+  AMAFlags: 'DOCUMENTATION',
+  UniqueID: '1495180437.4794',
+  UserField: 'Outbound' }
+{ Event: 'End MixMonitorCall',
+  Privilege: 'agent,all',
+  File: '/media/ysDisk_1/autorecords/20170519/20170519145400-Outbound-pstn6-128-0947229824',
+  'Source Number': '128',
+  'Destination Number': '0947229824' }
+  20170519150048 2017-05-19 15:00:48 20170519150048
