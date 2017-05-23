@@ -71,7 +71,9 @@ function createWebSocket(server) {
 
                 var dbconnection = AMI.dbconnection;
                 if (data.Event == 'Cdr') {
+                    console.log('pbx call:',data.Source, data.Destination);
                     dbconnection.execute('SELECT id, phone_crm_extension FROM vtiger_users WHERE phone_crm_extension=? OR phone_crm_extension=?', [data.Source, data.Destination], function (err, results, fields) {
+                        console.log('length:', results.length)
                         if (results.length > 0) {
                             var userId = results[0].id;
                             if (userId) {
@@ -111,7 +113,7 @@ function createWebSocket(server) {
                                                         }
                                                     });
                                             } else {
-                                                console.log('ERROR when inserted entity id:', nextId);
+                                                console.log('ERROR when inserted entity id:', nextId,errI1);
                                             }
                                         });
                                 });

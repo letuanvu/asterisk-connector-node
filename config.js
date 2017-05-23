@@ -1,12 +1,12 @@
 const configPBXservers = [{
     company: 'ASK',
-    crmurl: 'http://192.168.100.136/vtigercrm7',
+    crmurl: 'http://192.168.100.41',
     db: {
         host: '192.168.100.41',
         port: '3306',
         user: 'root',
         password: 'root',
-        database: 'vtigercrm7',
+        database: 'crm201',
     },
     asterisk: {
         ASTERISK_SERVER_IP: '192.168.100.3',
