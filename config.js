@@ -6,7 +6,7 @@ const configPBXservers = [{
         port: '3306',
         user: 'root',
         password: 'root',
-        database: 'crm201',
+        database: 'testPBX',
     },
     asterisk: {
         ASTERISK_SERVER_IP: '192.168.100.3',
