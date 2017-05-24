@@ -12,7 +12,7 @@ function listener(ami, socket) {
         }
     });
     socket.on('makeCall', (data) => {
-        if (data && data != "" && data.caller && data.callee) {
+        if (data && data != "" && data.caller && data.callee && data.customerId) {
             ami.action(
                 'Originate',
                 {
@@ -44,12 +44,13 @@ function executeCommand(command, socket, ami) {
                 socket.emit('info', 'Excuting command ' + command);
                 ami.action(
                     'Originate',
-                    {
+                    {   
                         Channel: 'SIP/' + arrayCommand[1],
                         Context: 'DLPN_DialPlan' + arrayCommand[1],
                         Priority: 1,
                         Async: 'false',
-                        Exten: arrayCommand[2]
+                        Exten: arrayCommand[2],
+                        CallerID: 'this is me'
                     },
                     function (data) {
                         if (data.Response == 'Error') {
