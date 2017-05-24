@@ -71,13 +71,14 @@ function createWebSocket(server) {
 
                 var dbconnection = AMI.dbconnection;
                 if (data.Event == 'Cdr') {
-                    console.log('pbx call:', data.Source, data.Destination);
-                    dbconnection.execute('SELECT id, phone_crm_extension FROM vtiger_users WHERE phone_crm_extension=? OR phone_crm_extension=?', [data.Source, data.Destination], function (err, results, fields) {
+                    var sourceNum = data.Source || data.CallerID.split('/')[0];
+                    console.log('pbx call:', sourceNum, data.Destination);
+                    dbconnection.execute('SELECT id, phone_crm_extension FROM vtiger_users WHERE phone_crm_extension=? OR phone_crm_extension=?', [sourceNum, data.Destination], function (err, results, fields) {
                         console.log('length:', results.length)
                         if (!err && results.length > 0) {
                             var userId = results[0].id;
                             if (userId) {
-                                console.log('crm user got call:', data.Source, data.Destination)
+                                console.log('crm user got call:', sourceNum, data.Destination)
                                 var startTime = '';
                                 if (data.AnswerTime) {
                                     startTime = data.AnswerTime;
@@ -85,10 +86,10 @@ function createWebSocket(server) {
                                     startTime = data.StartTime;
                                 }
                                 var customernumber = '';
-                                if (results[0].phone_crm_extension == data.Source) {
+                                if (results[0].phone_crm_extension == sourceNum) {
                                     customernumber = data.Destination;
                                 } else {
-                                    customernumber = data.Source;
+                                    customernumber = sourceNum;
                                 }
                                 dbconnection.execute('SELECT MAX(crmid) AS latestId FROM `vtiger_crmentity`', function (errS1, resultsS1, fieldsS1) {
                                     if (!errS1) {
@@ -106,7 +107,7 @@ function createWebSocket(server) {
                                                         }
                                                     });
                                                     dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber, customer) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                                                        [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber, +data.CallerID || null], function (errI2, resultsI2, fieldsI2) {
+                                                        [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber, +data.CallerID.split('/')[1] || null], function (errI2, resultsI2, fieldsI2) {
                                                             if (!errI2) {
                                                                 console.log('inserted into vtiger_pbxmanage', nextId);
                                                             } else {
