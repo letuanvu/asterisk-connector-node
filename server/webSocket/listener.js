@@ -12,7 +12,7 @@ function listener(ami, socket) {
         }
     });
     socket.on('makeCall', (data) => {
-        if (data && data != "" && data.user && data.caller && data.customerId) {
+        if (data && data != "" && data.user && data.caller && data.userExten) {
             ami.action(
                 'Originate',
                 {
@@ -21,7 +21,7 @@ function listener(ami, socket) {
                     Priority: 1,
                     Async: 'false',
                     Exten: data.caller,
-                    CallerID: data.customerId
+                    CallerID: data.userExten
                 },
                 function (data) {
                     if (data.Response == 'Error') {
