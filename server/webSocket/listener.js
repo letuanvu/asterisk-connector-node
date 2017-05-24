@@ -10,6 +10,27 @@ function listener(ami, socket) {
             executeCommand(data, socket, ami);
             cb();
         }
+    });
+    socket.on('makeCall', (data) => {
+        if (data && data != "" && data.caller && data.callee) {
+            ami.action(
+                'Originate',
+                {
+                    Channel: 'SIP/' + data.caller,
+                    Context: 'DLPN_DialPlan' + data.caller,
+                    Priority: 1,
+                    Async: 'false',
+                    Exten: data.callee
+                },
+                function (data) {
+                    if (data.Response == 'Error') {
+                        socket.emit('apiresult', {success: false, message: 'Cannot originate call!'});
+                        return;
+                    }
+                    socket.emit('apiresult', {success: true, message: 'Originating call!'});
+                }
+            );
+        }
     })
 }
 
