@@ -105,8 +105,8 @@ function createWebSocket(server) {
                                                             console.log('ERROR when updated sequence entity');
                                                         }
                                                     });
-                                                    dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                                                        [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber], function (errI2, resultsI2, fieldsI2) {
+                                                    dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber, customer) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                                                        [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber, +data.CallerID || null], function (errI2, resultsI2, fieldsI2) {
                                                             if (!errI2) {
                                                                 console.log('inserted into vtiger_pbxmanage', nextId);
                                                             } else {

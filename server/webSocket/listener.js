@@ -12,15 +12,16 @@ function listener(ami, socket) {
         }
     });
     socket.on('makeCall', (data) => {
-        if (data && data != "" && data.caller && data.callee && data.customerId) {
+        if (data && data != "" && data.user && data.caller && data.customerId) {
             ami.action(
                 'Originate',
                 {
-                    Channel: 'SIP/' + data.caller,
-                    Context: 'DLPN_DialPlan' + data.caller,
+                    Channel: 'SIP/' + data.user,
+                    Context: 'DLPN_DialPlan' + data.user,
                     Priority: 1,
                     Async: 'false',
-                    Exten: data.callee
+                    Exten: data.caller,
+                    CallerID: data.customerId
                 },
                 function (data) {
                     if (data.Response == 'Error') {
@@ -44,13 +45,12 @@ function executeCommand(command, socket, ami) {
                 socket.emit('info', 'Excuting command ' + command);
                 ami.action(
                     'Originate',
-                    {   
+                    {
                         Channel: 'SIP/' + arrayCommand[1],
                         Context: 'DLPN_DialPlan' + arrayCommand[1],
                         Priority: 1,
                         Async: 'false',
-                        Exten: arrayCommand[2],
-                        CallerID: 'this is me'
+                        Exten: arrayCommand[2]
                     },
                     function (data) {
                         if (data.Response == 'Error') {
