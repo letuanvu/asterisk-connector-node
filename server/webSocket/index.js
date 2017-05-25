@@ -50,14 +50,15 @@ function createWebSocket(server) {
                             //khong the ket noi den crm, khong cho ket noi den namespace
                             next(new Error('Cannot connect to vtiger crm'));
                         } else {
-                            if (body == 'Invalid request' || body.indexOf('undefined') === 1 || !body) {
-                                //session id va crsf ko phu hop, khong cho ket noi den namespace
-                                next(new Error('Not authorized'));
-                            } else if (JSON.parse(body).success) {
-                                //xac thuc thanh cong, cho ket noi den namespace
-                                next();
-                            } else {
-                                //session id va crsf ko phu hop, khong cho ket noi den namespace
+                            try {
+                                var JsonBody = JSON.parse(body);
+                                if (JsonBody.success) {
+                                    //xac thuc thanh cong, cho ket noi den namespace
+                                    next();
+                                }
+                            } catch (e) {
+                                //Xac thuc that bai, khong cho ket noi den namespace
+                                console.log(e.message);
                                 next(new Error('Not authorized'));
                             }
                         }
