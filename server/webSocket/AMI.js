@@ -3,8 +3,8 @@ const emitter = require('./emitter.js');
 
 
 function createAMIstream(socket, ami, dbconnection) {
-    listener(ami, socket);
-    emitter(ami, socket, dbconnection);
+    listener(ami, socket); // tao listener
+    emitter(ami, socket, dbconnection); //tao emitter
 }
 
 module.exports.emitter = createAMIstream;

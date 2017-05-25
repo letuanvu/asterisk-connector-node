@@ -4,6 +4,7 @@ const createAMIstream = require('./AMI.js').emitter;
 
 function createStream(socket, ami, dbconnection) {
     socket.emit('greeting', 'Xin Chào!');
+    //tao emiter va listener
     createAMIstream(socket, ami, dbconnection);
 }
 

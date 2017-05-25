@@ -1,9 +1,11 @@
 
 function listener(ami, socket) {
+    //lang nghe su kien ngat ket noi tu 1 user den server
     socket.on('disconnect', () => {
         console.log('User was disconnected');
     });
 
+    //socket lang nghe su kien command gui di tu client
     socket.on('command', (data, cb) => {
         if (data && data != "") {
             socket.emit('command', data);
@@ -11,8 +13,10 @@ function listener(ami, socket) {
             cb();
         }
     });
+    //lang nghe su kien makeCall duoc gui di tu client
     socket.on('makeCall', (data) => {
         if (data && data != "" && data.user && data.caller && data.callerId) {
+            //tao 1 cuoc goi moi qua AMI
             ami.action(
                 'Originate',
                 {
@@ -44,6 +48,7 @@ function executeCommand(command, socket, ami) {
                 socket.emit('errorAMI', 'Missing parameters!');
             } else {
                 socket.emit('info', 'Excuting command ' + command);
+                //tao 1 cuoc goi moi qua AMI
                 ami.action(
                     'Originate',
                     {
