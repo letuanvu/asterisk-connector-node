@@ -26,7 +26,6 @@ function listener(ami, socket) {
                     Async: 'false',
                     Exten: data.caller,
                     CallerID: data.user+'/'+data.callerId,
-                    Data: 'aaaa'
                 },
                 function (data) {
                     if (data.Response == 'Error') {
