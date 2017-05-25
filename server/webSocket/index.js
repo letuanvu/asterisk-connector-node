@@ -1,6 +1,6 @@
 const socketIO = require('socket.io');
 const createStream = require('./IOstream.js');
-const configPBXservers = require('../../config.js').configPBXservers;
+const {configPBXservers, connectorURL} = require('../../config.js');
 const aio = require('asterisk.io');
 const FormData = require('form-data');
 const request = require('request');
@@ -156,7 +156,7 @@ function createWebSocket(server) {
                             [...params], function (err, results, fields) {
                                 if (results.length > 0)
                                     dbconnection.execute('UPDATE vtiger_pbxmanager SET recordingurl=?, callstatus=? WHERE pbxmanagerid=?',
-                                        [dirArr[4] + '/' + dirArr[5], 'completed', results[0].pbxmanagerid], function (errU, resultsU, fieldsU) {
+                                        [connectorURL+'/'+AMI.namespace+'/'+dirArr[4]+'/'+dirArr[5], 'completed', results[0].pbxmanagerid], function (errU, resultsU, fieldsU) {
                                             if (!errU) {
                                                 console.log('added call record URL successfully');
                                             } else {

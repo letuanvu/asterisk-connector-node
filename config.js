@@ -1,3 +1,4 @@
+const ConnectorURL = 'http://192.168.100.43:3000';
 const configPBXservers = [{
     company: 'ASK',
     crmurl: 'http://192.168.100.41',
@@ -6,7 +7,7 @@ const configPBXservers = [{
         port: '3306',
         user: 'root',
         password: 'root',
-        database: 'testPBX',
+        database: 'vtigercrm7',
     },
     asterisk: {
         ASTERISK_SERVER_IP: '192.168.100.3',
@@ -23,5 +24,5 @@ const configPBXservers = [{
 
 }]
 
-
+module.exports.connectorURL = ConnectorURL;
 module.exports.configPBXservers = configPBXservers;
