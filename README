@@ -1,0 +1,11 @@
+mount --bind /media/ysDisk_1/ /persistent/ysDisk_1 //run this command to bind folder in PBX
+
+- Add socket.io.js to crm and make a connection from it.
+
+- Edit csrf-magic.js line 52 :
+"return this.csrf_send(prepend + data);" to 
+"if (data.indexOf('module=') !== -1) {
+    return this.csrf_send(prepend + data);
+} else {
+    return this.csrf_send(data);
+}"
