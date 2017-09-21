@@ -1,24 +1,29 @@
 {
-  "name": "asterisk-connector-node",
+  "name": "vtigercrm-asterisk-connector",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Van Thong Nguyen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doantheanh172tb/vTigerCRM-asterisk-connector.git"
+  },
+  "author": "Doan The Anh, doantheanh172tb@gmail.com, +84964225162",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/doantheanh172tb/vTigerCRM-asterisk-connector/issues"
+  },
+  "homepage": "https://github.com/doantheanh172tb/vTigerCRM-asterisk-connector#readme",
   "dependencies": {
-    "agi-node": "0.0.7",
     "asterisk.io": "^0.1.1",
     "ejs": "^2.5.6",
-    "express": "^4.15.2",
-    "form-data": "^2.1.4",
+    "express": "^4.15.3",
+    "fs": "0.0.1-security",
     "ftp": "^0.3.10",
-    "lodash": "^4.17.4",
-    "mysql2": "^1.2.0",
-    "request": "^2.81.0",
-    "socket.io": "^2.0.1"
+    "node-vtiger": "^0.3.4",
+    "socket.io": "^2.0.3"
   }
 }

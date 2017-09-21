@@ -3,24 +3,24 @@ const express = require('express');
 const http = require('http');
 
 const publicPath = path.join(__dirname, '../views');
-const storagePath = path.join(__dirname, '/storage');
 const createWebSocket = require('./webSocket/index.js');
-const Client = require('ftp');
-const fs = require('fs');
 const configPBXservers = require('../config.js').configPBXservers;
 
+const storagePath = path.join(__dirname, '/storage');
+const Client = require('ftp');
+const fs = require('fs');
+
 var app = express();
-//tao 1 express server
+//create 1 express server
 var server = http.createServer(app);
-//tao 1 socket server
+//create 1 socket server
 createWebSocket(server);
-//su dung duong dan public de truyen cac file static
+//Pass the name of the directory that contains the static assets to the express.static
 app.use(express.static(publicPath));
-//set view engine
+// set view engine
 app.set('view engine', 'ejs');
 
-
-//phuong thuc get de lay trang index quan ly ca pbx hien tai
+//list Namespace
 app.get('/', function (req, res) {
     var companyList = configPBXservers.map(confPBX => confPBX.company);
     res.render('index', {
@@ -28,15 +28,15 @@ app.get('/', function (req, res) {
     });
 });
 
-
-//phuong thuc get de lay trang quan ly 1 pbx cu the
+//detail 1 Namespace
 app.get('/:namespace', function (req, res) {
     res.render('detail', {
         namespace: req.params.namespace
     });
 });
 
-//phuong thuc get de lay file ghi am cua 1 cuc goi tu 1 pbx cu the
+//get file recordingurl
+//server url/:company/:path/:filename
 app.get('/:company/:path/:filename', (req, res) => {
     //tim ten pbx trong config
     configPBXservers.forEach(function (confPBX) {
@@ -44,7 +44,7 @@ app.get('/:company/:path/:filename', (req, res) => {
             //tao 1 ket noi ftp den server pbx
             var c = new Client();
             c.connect(confPBX.ftp);
-            c.on('ready', function () { 
+            c.on('ready', function () {
                 //get file ghi am tu server ftp
                 c.get('/ysDisk_1/autorecords/' + req.params.path + '/' + req.params.filename + '.wav', function (err, stream) {
                     if (err) console.log(err);
@@ -70,8 +70,8 @@ app.get('/:company/:path/:filename', (req, res) => {
         }
     });
 
-})
+});
 
-server.listen(3000, () => {
-    console.log('app is running');
-})
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`Connect success`);
+});

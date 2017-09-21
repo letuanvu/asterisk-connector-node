@@ -1,28 +1,31 @@
-const ConnectorURL = 'http://192.168.100.43:3000';
+const ConnectorURL = 'http://localhost:3000';
 const configPBXservers = [{
     company: 'ASK',
-    crmurl: 'http://192.168.100.41',
-    db: {
-        host: '192.168.100.41',
-        port: '3306',
-        user: 'root',
-        password: 'root',
-        database: 'vtigercrm7',
+    crm: {
+        auth: {
+            VT_URL: 'http://localhost/crm-ask',
+            VT_USER: 'admin',
+            VT_ACCESSKEY: 'NmekXjHCmQsNvwtV', // accesskey is in your vtiger user preferences
+            LOGGING_LEVEL: 'warning',   // level of logging (error||warning||info||debug||trace)
+        },
+        customers: {
+            moduleName: 'Contacts',
+            phoneFields: ['phone', 'mobile'],
+        },
     },
     asterisk: {
-        ASTERISK_SERVER_IP: '192.168.100.3',
-        ASTERISK_SERVER_PORT: 5038,
+        ASTERISK_SERVER_IP: 'ip_ASTERISK',
+        ASTERISK_SERVER_PORT: 'port_ASTERISK',
         ASTERISK_USERNAME: 'admin',
         ASTERISK_PASSWORD: 'password',
     },
     ftp: {
-        host: '192.168.100.3',
+        host: 'ip_ftp_ASTERISK',
         port: 21,
-        user: 'root',
-        password: 'ys123456'
+        user: 'user',
+        password: 'passwordftp'
     }
-
-}]
+}];
 
 module.exports.connectorURL = ConnectorURL;
 module.exports.configPBXservers = configPBXservers;

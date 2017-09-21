@@ -1,180 +1,258 @@
 const socketIO = require('socket.io');
-const createStream = require('./IOstream.js');
-const {configPBXservers, connectorURL} = require('../../config.js');
+const { configPBXservers, connectorURL } = require('../../config.js');
 const aio = require('asterisk.io');
-const FormData = require('form-data');
-const request = require('request');
-const mysql = require('mysql2');
+const vtws = require('node-vtiger');
+const createStream = require('./IOstream.js');
 
 function createWebSocket(server) {
-    //tao 1 object io
+    //create io object
     var io = socketIO(server);
-    //loop qua tat ca cac config cua cac server pbx va crm
+    //loop all PBX config
     var AMIservers = configPBXservers.map(configPBX => {
-
         return {
             namespace: configPBX.company,
-            crmurl: configPBX.crmurl,
-            dbconnection: mysql.createConnection(configPBX.db), //tao ket noi toi sql cua crm trong config
-            server: aio.ami( //tao ket noi den PBX qua AMI
+            server: aio.ami( //connect PBX with asterisk ami
                 configPBX.asterisk.ASTERISK_SERVER_IP,
                 configPBX.asterisk.ASTERISK_SERVER_PORT,
                 configPBX.asterisk.ASTERISK_USERNAME,
                 configPBX.asterisk.ASTERISK_PASSWORD
-            )
+            ),
+            crmAuth: {
+                VT_URL: configPBX.crm.auth.VT_URL,
+                VT_USER: configPBX.crm.auth.VT_USER,
+                VT_ACCESSKEY: configPBX.crm.auth.VT_ACCESSKEY,
+                LOGGING_LEVEL: configPBX.crm.auth.LOGGING_LEVEL,
+            },
+            customers: configPBX.crm.customers,
         };
     });
     AMIservers.forEach(function (AMI) {
-        //lang nghe su kien ready tu server PBX qua AMI
+        // console.log('AMI');
+        // console.log(AMI);
+        var vt_client = new vtws(
+            AMI.crmAuth.VT_URL,
+            AMI.crmAuth.VT_USER,
+            AMI.crmAuth.VT_ACCESSKEY,
+            AMI.crmAuth.LOGGING_LEVEL
+        );
+
+        /**
+        * // error throw if
+        * // - could not connect to hostname
+        * // - could not log in with username/password
+        * // - asterisk server close socket
+        */
+        AMI.server.on('error', function (err) {
+            console.log(AMI.namespace, "::Err: " + err);
+        });
+
+        // when 'Shutdown' was emitted by asterisk ami, the event is 'event'+'Shutdown' will be emitted
+        // data have full body message from asterisk ami
+        AMI.server.on('eventShutdown', function (data) {
+            console.log(AMI.namespace, '::eventShutdown');
+            console.log(data);
+        });
+
+        // connected and logged with asterisk ami
         AMI.server.on('ready', function () {
-            console.log(AMI.namespace, "is ready to connect");
+            console.log(AMI.namespace, "::is ready to connect");
             //tao 1 namespace trong socket, phuong thuc use() cho phep dinh 1 middleware vao socket
             io.of('/' + AMI.namespace).use(function (socket, next) {
-                var handshakeData = socket.request;
-                if (handshakeData._query.token) {
-                    //chung thuc session id va csrf cua crm
-                    var formData = {
-                        module: 'PBXManager',
-                        action: 'PBXauth',
-                        __vtrftk: handshakeData._query.token
+                //check crm authorized
+                vt_client.doLogin((err, result) => {
+                    if (err) {
+                        console.log(AMI.namespace, '::authorized CRM failed');
+                        next(new Error('not authorized'));
+                    } else {
+                        console.log(AMI.namespace, '::authorized CRM successed');
+                        console.log(result);
+                        next();
                     }
-                    request.post({
-                        url: AMI.crmurl + '/index.php',
-                        headers: {
-                            'cookie': handshakeData._query.cookie
-                        },
-                        formData: formData
-                    }, (err, res, body) => {
-                        console.log(body)
-                        if (err) {
-                            //khong the ket noi den crm, khong cho ket noi den namespace
-                            next(new Error('Cannot connect to vtiger crm'));
-                        } else {
-                            try {
-                                var JsonBody = JSON.parse(body);
-                                if (JsonBody.success) {
-                                    //xac thuc thanh cong, cho ket noi den namespace
-                                    next();
-                                }
-                            } catch (e) {
-                                //Xac thuc that bai, khong cho ket noi den namespace
-                                console.log(e.message);
-                                next(new Error('Not authorized'));
-                            }
-                        }
-                    });
-                } else {
-                    //khong co token, ko cho ket noi den namespace
-                    next(new Error('not authorized'));
-                }
+                });
             });
-            //lang nghe su kien connection tren namespace
+            //listen namseSpace AMI.namespace
             io.of('/' + AMI.namespace).on('connection', (socket) => {
-                console.log('new connection');
-                //tao emitrer va listener
-                createStream(socket, AMI.server, AMI.dbconnection);
+                console.log(AMI.namespace, '::new connection');
+                //create emitter vs listener
+                createStream(socket, AMI.server);
             });
 
-            //lang nghe tat ca su kien tu AMI cua pbx
+            //listen eventAny from AMI
             AMI.server.on('eventAny', function (data) {
-                var dbconnection = AMI.dbconnection;
-                //neu su kien la Cdr
-                if (data.Event == 'Cdr') {
-                    var sourceNum = data.Source || data.CallerID.split('/')[0];//so dien thoai goi di
-                    console.log('pbx call:', sourceNum, data.Destination);
-                    //tim kiem so goi di trong bang user cua crm
-                    dbconnection.execute('SELECT id, phone_crm_extension FROM vtiger_users WHERE phone_crm_extension=? OR phone_crm_extension=?', [sourceNum, data.Destination], function (err, results, fields) {
-                        console.log('length:', results.length)
-                        if (!err && results.length > 0) { //neu ton tai user
-                            var userId = results[0].id; //lay user id
-                            if (userId) {
-                                console.log('crm user got call:', sourceNum, data.Destination)
-                                var startTime = '';
-                                if (data.AnswerTime) {
-                                    startTime = data.AnswerTime;
+                // console.log(AMI.namespace, '::eventAny');
+                // Event = Cdr
+                if (
+                    data.Event == 'Cdr' //action Cdr
+                    //&& data.AnswerTime != '' //ring source
+                    && (data.UserField == 'Outbound' || data.UserField == 'Inbound') //call with customer
+                ) {
+                    console.log("console data lime____");
+                    console.log(data);
+                    console.log("console data lime____");
+
+                    console.log(AMI.namespace, '::eventAny::crm user got call: __from:',
+                        data.Source, '__to:', data.Destination, '__type:', data.UserField);
+
+                    var phone_extension = '', phone_customer = '' /*, startTime = data.AnswerTime*/;
+                    if (data.UserField == 'Outbound') {
+                        //Outbound Call
+                        phone_extension = data.Source;
+                        phone_customer = data.Destination;
+
+                        if(!phone_extension) {
+                            phone_extension = data.Channel.split("/")[1].split("-")[0];
+                        }
+                    } else {
+                        //Inbound Call
+                        phone_extension = data.Destination;
+                        phone_customer = data.Source;
+                    }
+                    //if data.Source = 664(169)
+                    if (phone_extension.indexOf('(') != -1) {
+                        phone_extension = phone_extension.substring(phone_extension.indexOf('(') + 1, phone_extension.indexOf(')'));
+                    }
+
+                    console.log('phone_extension: ', phone_extension, ' phone_customer:', phone_customer, 'UserField', data.UserField);
+                    //check Login CRM
+                    vt_client.doLogin((loginErr) => {
+                        if (loginErr) {
+                            console.log('Error> doLogin(eventAny)', JSON.stringify(loginErr));
+                        } else {
+                            let query = "SELECT id, phone_crm_extension FROM Users WHERE  phone_crm_extension='" + phone_extension + "'";
+
+                            //get user with phone_extension
+                            vt_client.doQuery(query, (userErr, userResult) => {
+                                if (userErr) {
+
+                                    console.log('Lỗi lỗi',query);
+
+                                    console.log('Error> doQueryPhoneExtension', JSON.stringify(userErr));
                                 } else {
-                                    startTime = data.StartTime;
-                                }
-                                var customernumber = '';
-                                if (results[0].phone_crm_extension == sourceNum) {
-                                    customernumber = data.Destination;
-                                } else {
-                                    customernumber = sourceNum;
-                                }
-                                //tim id tiep theo trong bang entity cua crm
-                                dbconnection.execute('SELECT MAX(crmid) AS latestId FROM `vtiger_crmentity`', function (errS1, resultsS1, fieldsS1) {
-                                    if (!errS1) {
-                                        var nextId = resultsS1[0].latestId + 1;
-                                        console.log('next entity id:', nextId);
-                                        //insert vao bang entity
-                                        dbconnection.execute('INSERT INTO vtiger_crmentity (crmid,smcreatorid,smownerid,modifiedby,setype,description,createdtime,modifiedtime,viewedtime,status,version,presence,deleted,label,source,smgroupid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                                            [nextId, 1, 1, 0, "PBXManager", "", data.StartTime, data.StartTime, null, null, 0, 1, 0, customernumber, "CRM", 0], function (errI1, resultsI1, fieldsI1) {
-                                                if (!errI1) {
-                                                    console.log('inserted entity id:', nextId);
-                                                    //cap nhat bang entity_seq
-                                                    dbconnection.execute('UPDATE vtiger_crmentity_seq SET id=?', [nextId], function (errU1, resultsU1, fieldsU1) {
-                                                        if (!errU1) {
-                                                            console.log('updated sequence entity');
-                                                        } else {
-                                                            console.log('ERROR when updated sequence entity');
-                                                        }
-                                                    });
-                                                    //insert vao bang pbxmanager
-                                                    dbconnection.execute('INSERT INTO vtiger_pbxmanager (pbxmanagerid, direction, callstatus, starttime, endtime, totalduration, billduration, gateway, user, customernumber, customer) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                                                        [nextId, data.UserField, 'incompleted', startTime, data.EndTime, data.Duration, data.BillableSeconds, 'Node Connector', userId, customernumber, +data.CallerID.split('/')[1] || null], function (errI2, resultsI2, fieldsI2) {
-                                                            if (!errI2) {
-                                                                console.log('inserted into vtiger_pbxmanage', nextId);
+                                    console.log('Successed> userResult', JSON.stringify(userResult));
+                                    if (userResult.length > 0) {
+                                        // if (userResult.length == 1) {
+                                        let queryCustomer = "SELECT id FROM " + AMI.customers.moduleName + "  WHERE ";
+                                        for (i = 0; i < AMI.customers.phoneFields.length; ++i) {
+                                            if (i == 0) {
+                                                queryCustomer += AMI.customers.phoneFields[i] + "='" + phone_customer + "'";
+                                            } else {
+                                                queryCustomer += " OR " + AMI.customers.phoneFields[i] + "='" + phone_customer + "'";
+                                            }
+                                        }
+
+                                        //get customer with phone_customer
+                                        vt_client.doQuery(queryCustomer, (customerErr, customerResults) => {
+                                            if (customerErr) {
+                                                console.log('err111', JSON.stringify(customerErr));
+                                            } else {
+                                                console.log('1111 _jdhdkf sdksdk', JSON.stringify(customerResults));
+                                                switch (customerResults.length) {
+                                                    case 0:
+                                                        break;
+                                                    default:
+                                                        var pbx_data = {
+                                                            "direction": data.UserField,
+                                                            "callstatus": data.Disposition,
+                                                            "starttime": data.StartTime,
+                                                            "endtime": data.EndTime,
+                                                            "totalduration": data.Duration,
+                                                            "billduration": data.BillableSeconds,
+                                                            "gateway": data.LastApplication,
+                                                            "user": userResult[0].id,
+                                                            "customernumber": phone_customer,
+                                                            "customer": customerResults[0].id,
+                                                        };
+
+                                                        //create new pbx record
+                                                        vt_client.doCreate('PBXManager', pbx_data, ((pbxErr, pbxResult) => {
+                                                            if (pbxErr) {
+                                                                console.log('!!!!!!!!!!!!!!Error > insert pbxmanager:: ', JSON.stringify(pbxErr));
                                                             } else {
-                                                                console.log('ERROR when inserted into vtiger_pbxmanage', nextId);
+                                                                console.log('!!!!!!!!!Successed > insert pbxmanager:: ', JSON.stringify(pbxResult));
                                                             }
-                                                        });
-                                                } else {
-                                                    console.log('ERROR when inserted entity id:', nextId, errI1);
+                                                        }));
                                                 }
-                                            });
+                                            }
+                                        });
+                                        // } else {
+                                        // }
                                     } else {
-                                        console.log('ERROR when select next entity id:', nextId, errS1);
+                                        console.log(phone_extension + ' not existing in CRM');
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
                     });
-
-                }
-
-                //luu file ghi am
-                if (data.Event == 'End MixMonitorCall') {
+                } else if (data.Event == 'End MixMonitorCall') {
+                    console.log('End MixMonitorCall-------------------');
+                    console.log(data);
                     var source = data['Source Number'];
                     var destination = data['Destination Number'];
                     var dirArr = data.File.split('/');
                     var filenameArr = dirArr[5].split('-');
                     var dateString = filenameArr[0];
+                    let typeCall = filenameArr[1];
 
-                    //function update pbxmanager va them vao duong dan file ghi am
-                    function doSaveRecord(params) {
-                        dbconnection.execute("SELECT pbxmanagerid FROM vtiger_pbxmanager WHERE DATE_FORMAT(starttime, '%Y%m%d%H%i%s')=? AND (customernumber = ? OR customernumber =?)",
-                            [...params], function (err, results, fields) {
-                                if (results.length > 0)
-                                    dbconnection.execute('UPDATE vtiger_pbxmanager SET recordingurl=?, callstatus=? WHERE pbxmanagerid=?',
-                                        [connectorURL+'/'+AMI.namespace+'/'+dirArr[4]+'/'+dirArr[5], 'completed', results[0].pbxmanagerid], function (errU, resultsU, fieldsU) {
-                                            if (!errU) {
-                                                console.log('added call record URL successfully');
-                                            } else {
-                                                console.log('ERROR when added call record URL');
+                    if (typeCall == 'Outbound' || typeCall == 'Inbound') {
+                        //function update pbxmanager (recordingurl)
+                        function doSaveRecord(params) {
+
+                            //check Login CRM
+                            vt_client.doLogin((loginErr) => {
+                                if (loginErr) {
+                                    console.log('Error> doLogin', JSON.stringify(loginErr));
+                                } else {
+                                    var mixMonitorTime =
+                                        params.dateString.substr(0, 4) + "-" +
+                                        params.dateString.substr(4, 2) + "-" +
+                                        params.dateString.substr(6, 2) + " " +
+                                        params.dateString.substr(8, 2) + ":" +
+                                        params.dateString.substr(10, 2) + ":" +
+                                        params.dateString.substr(12, 2);
+
+                                    // console.log('11111111111111111111111111111111', mixMonitorTime);
+                                    let customernumber = "";
+                                    if (typeCall == 'Outbound') {
+                                        customernumber = params.destination;
+                                    } else {
+                                        customernumber = params.source;
+                                    }
+                                    let pbxQuery = "SELECT * FROM PBXManager WHERE endtime >='" + mixMonitorTime + "'"
+                                        + " AND customernumber = '" + customernumber + "'";
+
+                                    // //get pbx
+                                    vt_client.doQuery(pbxQuery, (pbxErr, pbxResult) => {
+                                        if (pbxErr) {
+                                            console.log('Error> doQueryPBXmanagerID', JSON.stringify(pbxErr));
+                                        } else {
+                                            console.log('Successed> doQueryPBXmanagerID', JSON.stringify(pbxResult));
+                                            if (pbxResult.length > 0) {
+                                                let updatePBXRecord = pbxResult[0];
+                                                updatePBXRecord.recordingurl = connectorURL + '/' + AMI.namespace + '/' + dirArr[4] + '/' + dirArr[5];
+                                                //doUpdate pbx
+                                                vt_client.doUpdate(updatePBXRecord, (updatePBXErr, updatePBXResult) => {
+                                                    if (updatePBXErr) {
+                                                        console.log('Error> doQueryPBXmanagerID', JSON.stringify(updatePBXErr));
+                                                    } else {
+                                                        console.log('Successed> doQueryPBXmanagerID', JSON.stringify(updatePBXResult));
+                                                    }
+                                                })
                                             }
-                                        });
+                                        }
+                                    })
+                                }
                             })
-                    };
+                        };
 
-                    //function cho phep chay 1 function sau 1 thoi gian
-                    var asyncSaveRecord = (params, callback) => {
-                        setTimeout(() => {
-                            callback(params);
-                        }, 10000);
-                    };
+                        var asyncSaveRecord = (params, callback) => {
+                            setTimeout(() => {
+                                callback(params);
+                            }, 10000);
+                        };
 
-                    //sau 10s chay function doSaveRecord()
-                    asyncSaveRecord([dateString, destination, source], doSaveRecord);
+                        //function run asyncSaveRecord wait 10s
+                        asyncSaveRecord({ dateString: dateString, destination: destination, source: source }, doSaveRecord);
+                    }
                 }
             });
         });
